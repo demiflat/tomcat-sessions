@@ -12,6 +12,6 @@ repositories {
 
 var tomcatVersion = "10.1.8"
 dependencies {
-    implementation("org.apache.tomcat:tomcat-catalina:${tomcatVersion}")
-    implementation("org.apache.tomcat:tomcat-tribes:${tomcatVersion}")
+    compileOnly("org.apache.tomcat:tomcat-catalina:${tomcatVersion}")
+    compileOnly("org.apache.tomcat:tomcat-tribes:${tomcatVersion}")
 }

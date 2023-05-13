@@ -1,8 +1,6 @@
 package org.orbeon.session.tomcat;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,22 +12,61 @@ import java.io.PrintWriter;
 
 @WebServlet("/tomcat")
 public class ClusteredServlet extends HttpServlet {
-
+    String sessionKey = ClusteredServlet.class.getName();
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
-        String local = req.getLocalAddr();
-        Integer count = 1;
+        Integer count = Integer.class.cast(session.getAttribute(sessionKey));
+
         if(session.isNew()) {
-            session.setAttribute(ClusteredServlet.class.getName(), count);
+            count = 0;
         } else {
-            count = (Integer)session.getAttribute(ClusteredServlet.class.getName());
+            if(count == null) {
+                // this shouldn't happen, make it obvious
+                count = Integer.MIN_VALUE;
+            }
             session.setAttribute(ClusteredServlet.class.getName(), ++count);
         }
 
-        String response = new StringBuilder().append(local).append(":").append(count).toString();
+        session.setAttribute(sessionKey, count);
+
         PrintWriter writer = resp.getWriter();
-        writer.println(response);
+        writePayload(count, req.getLocalName(), req.getLocalAddr(), req.getLocalPort(), writer);
         writer.close();
+    }
+
+    private void writePayload(Integer count, String localName, String localIp, Integer localPort, PrintWriter writer) {
+        writer
+                .append('{')
+                .append("\"")
+                .append("count")
+                .append("\"")
+                .append(":")
+                .append(String.valueOf(count))
+                .append(",")
+                .append("\"")
+                .append("localName")
+                .append("\"")
+                .append(":")
+                .append("\"")
+                .append(localName)
+                .append("\"")
+                .append(",")
+                .append("\"")
+                .append("localName")
+                .append("\"")
+                .append(":")
+                .append("\"")
+                .append(localIp)
+                .append("\"")
+                .append(",")
+                .append("\"")
+                .append("localPort")
+                .append("\"")
+                .append(":")
+                .append("\"")
+                .append(String.valueOf(localPort))
+                .append("\"")
+                .append('}');
     }
 }
