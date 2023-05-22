@@ -1,5 +1,6 @@
 package org.orbeon.session.tomcat;
 
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -7,12 +8,40 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
+
+import static java.util.Objects.nonNull;
 
 @WebServlet("/tomcat")
 public class ClusteredServlet extends HttpServlet {
+    public static final String ORBEON = "orbeon";
     String sessionKey = ClusteredServlet.class.getName();
+    Cache<String, Serializable> cache;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        String cacheName = config.getInitParameter("cacheName");
+        if(isBlank(cacheName)) {
+            // default:
+            cacheName = "orbeon";
+        }
+        MutableConfiguration<String, Serializable> cacheConfig = new MutableConfiguration<>();
+        // uses default config location: /redisson-jcache.yaml
+        CacheManager manager = Caching.getCachingProvider().getCacheManager();
+        cache = manager.createCache(cacheName, cacheConfig);
+    }
+
+    boolean isBlank(String string) {
+        return string == null || string.trim().isEmpty();
+    }
+
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
@@ -30,12 +59,19 @@ public class ClusteredServlet extends HttpServlet {
 
         session.setAttribute(sessionKey, count);
 
+        Integer cachedEntry = 0;
+        Serializable entry = cache.get(ORBEON);
+        if(nonNull(entry)) {
+            cachedEntry = Integer.class.cast(entry);
+        }
+        cache.put(ORBEON, ++cachedEntry);
+
         PrintWriter writer = resp.getWriter();
-        writePayload(count, req.getLocalName(), req.getLocalAddr(), req.getLocalPort(), writer);
+        writePayload(count, req.getLocalName(), req.getLocalAddr(), req.getLocalPort(), cachedEntry, writer);
         writer.close();
     }
 
-    private void writePayload(Integer count, String localName, String localIp, Integer localPort, PrintWriter writer) {
+    private void writePayload(Integer count, String localName, String localIp, Integer localPort, Integer cachedEntry, PrintWriter writer) {
         writer
                 .append('{')
                 .append("\"")
@@ -66,6 +102,14 @@ public class ClusteredServlet extends HttpServlet {
                 .append(":")
                 .append("\"")
                 .append(String.valueOf(localPort))
+                .append("\"")
+                .append(",")
+                .append("\"")
+                .append("cachedEntry")
+                .append("\"")
+                .append(":")
+                .append("\"")
+                .append(String.valueOf(cachedEntry))
                 .append("\"")
                 .append('}');
     }

@@ -14,4 +14,6 @@ var tomcatVersion = "10.1.8"
 dependencies {
     compileOnly("org.apache.tomcat:tomcat-catalina:${tomcatVersion}")
     compileOnly("org.apache.tomcat:tomcat-tribes:${tomcatVersion}")
+    implementation("org.redisson:redisson:3.21.3")
+    implementation("org.redisson:redisson-tomcat-10:3.21.3")
 }
