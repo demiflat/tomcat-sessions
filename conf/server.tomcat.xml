@@ -13,12 +13,6 @@
         <Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443"/>
         <Engine name="Catalina" defaultHost="localhost">
             <Cluster className="org.apache.catalina.ha.tcp.SimpleTcpCluster">
-                <Manager className="org.redisson.tomcat.RedissonSessionManager"
-                         configPath="${catalina.base}/redisson.conf"
-                         readMode="REDIS"
-                         updateMode="DEFAULT"
-                         broadcastSessionEvents="false"
-                         keyPrefix="orbeon"/>
                 <Channel className="org.apache.catalina.tribes.group.GroupChannel">
                     <Membership className="org.apache.catalina.tribes.membership.cloud.CloudMembershipService"
                                 membershipProviderClassName="org.apache.catalina.tribes.membership.cloud.KubernetesMembershipProvider"/>
