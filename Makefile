@@ -11,28 +11,38 @@ endif
 
 REGISTRY=control.demiflat.org:5000
 CONTAINER_NAME=tomcat-sessions
-CONTAINER_VERSION=001
+CONTAINER_VERSION=1
 CONTAINER_TAG="$(REGISTRY)/$(CONTAINER_NAME):$(CONTAINER_VERSION)"
 DEPLOYMENT=tomcat-sessions
 NAMESPACE=default
 
-gradle:
+info:
+> @cat .info
+
+all: login deploy
+> kubectl get -A all
+
+clean:
+> rm -rf build
+
+build:
 > ./gradlew war
 
 login:
 > podman login $(REGISTRY)
 
-docker: gradle
+docker: build
 > podman build -f Containerfile -t $(CONTAINER_TAG)
 
-push: login docker
+push: docker
 > podman push $(CONTAINER_TAG)
 
-deploy: push
+deploy: login push
 > kubectl create deployment $(DEPLOYMENT)  --image=$(CONTAINER_TAG) --port=8080 --replicas=3
-> kubectl create service clusterip $(DEPLOYMENT) --clusterip=None
+> kubectl create service clusterip $(DEPLOYMENT) --tcp=8080:8080
 > cat k8s-ingress.yaml | DEPLOYMENT=$(DEPLOYMENT) envsubst | kubectl apply -f -
 > cat k8s-role.yaml | NAMESPACE=$(NAMESPACE) envsubst | kubectl apply -f -
+> kubectl get all
 
 destroy:
 > kubectl delete deployment $(DEPLOYMENT) --ignore-not-found=true
@@ -40,8 +50,5 @@ destroy:
 > kubectl delete ingress $(DEPLOYMENT) --ignore-not-found=true
 > kubectl get all
 
-info:
+kube-info:
 > kubectl get all
-
-all:
-> kubectl get -A all
