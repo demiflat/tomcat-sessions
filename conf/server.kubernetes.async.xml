@@ -16,8 +16,7 @@
     <Service name="Catalina">
         <Connector port="8080"
             protocol="HTTP/1.1"
-            connectionTimeout="20000"
-            redirectPort="8443"/>
+            connectionTimeout="20000"/>
         <Engine name="Catalina"
             defaultHost="localhost">
             <!-- async,sync,use_ack, 8,2,6 https://tomcat.apache.org/tomcat-10.1-doc/config/cluster.html#SimpleTcpCluster_Attributes -->
