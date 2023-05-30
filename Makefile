@@ -9,7 +9,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
-REGISTRY=control.demiflat.org:5000
+REGISTRY:=$(DOCKER_REGISTRY)
 CONTAINER_NAME=tomcat-sessions
 CONTAINER_VERSION=1
 CONTAINER_TAG="$(REGISTRY)/$(CONTAINER_NAME):$(CONTAINER_VERSION)"
@@ -19,8 +19,7 @@ NAMESPACE=default
 info:
 > @cat .info
 
-all: login deploy
-> kubectl get -A all
+all: login deploy kube-info kube-info-all
 
 clean:
 > rm -rf build
@@ -38,7 +37,7 @@ push: docker
 > podman push $(CONTAINER_TAG)
 
 deploy: login push
-> kubectl create deployment $(DEPLOYMENT)  --image=$(CONTAINER_TAG) --port=8080 --replicas=3
+> kubectl create deployment $(DEPLOYMENT) --image=$(CONTAINER_TAG) --port=8080 --replicas=3
 > kubectl create service clusterip $(DEPLOYMENT) --tcp=8080:8080
 > cat k8s-ingress.yaml | DEPLOYMENT=$(DEPLOYMENT) envsubst | kubectl apply -f -
 > cat k8s-role.yaml | NAMESPACE=$(NAMESPACE) envsubst | kubectl apply -f -
@@ -52,3 +51,6 @@ destroy:
 
 kube-info:
 > kubectl get all
+
+kube-info-all:
+> kubectl get -A all
