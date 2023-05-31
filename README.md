@@ -88,10 +88,10 @@ Content-Type: text/plain; charset=utf-8
 Kubernetes role, used to allow Tomcat to call Kubernetes API to get member list of other pods in the same namespace.
 
 [k8s/k8s-deployment.yaml](k8s/k8s-deployment.yaml) 
-Kubernetes deployment, set to create 3 replicas for testing.[^4]
+Kubernetes deployment, set to create 3 replicas for testing.[^5]
 
 [k8s/k8s-ingress.yaml](k8s/k8s-ingress.yaml) 
-Kubernetes ingress, used to expose deployment externally.[^5]
+Kubernetes ingress, used to expose deployment externally.[^6]
 
 
 [^1]: Tomcat [Clustering](https://tomcat.apache.org/tomcat-10.1-doc/cluster-howto.html)
