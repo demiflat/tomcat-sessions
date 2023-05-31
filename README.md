@@ -1,4 +1,4 @@
-# tomcat sessions                                                  
+# ![tomcat sessions](tomcat-sessions.jpg)                                                 
 
 #### This project shows how to configure a simple servlet to run on Tomcat in Kubernetes with distributed session replication.
 
