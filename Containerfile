@@ -7,6 +7,7 @@ WORKDIR /deployments
 COPY conf/ /deployments/conf/
 ADD tomcat.deploy /deployments/tomcat
 ADD tomcat.jar /deployments
+ADD tomcat.version /deployments
 ADD build/libs/tomcat-sessions-0.0.1-SNAPSHOT.war /deployments/webapps/sessions.war
 
 EXPOSE 4000
