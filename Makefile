@@ -34,10 +34,10 @@ login:
 docker: build
 > podman build -f Containerfile -t $(CONTAINER_TAG)
 
-push: docker
+push: login docker
 > podman push $(CONTAINER_TAG)
 
-deploy: login 
+deploy: login push
 > cat k8s/k8s-deployment.yaml | CONTAINER_TAG=$(CONTAINER_TAG) DEPLOYMENT=$(DEPLOYMENT) DEPLOYMENT_PORT=$(DEPLOYMENT_PORT) envsubst | kubectl apply -f -
 > cat k8s/k8s-service.yaml | DEPLOYMENT=$(DEPLOYMENT) DEPLOYMENT_PORT=$(DEPLOYMENT_PORT) NAMESPACE=$(NAMESPACE) envsubst | kubectl apply -f -
 > cat k8s/k8s-ingress.yaml | DEPLOYMENT=$(DEPLOYMENT) DEPLOYMENT_PORT=$(DEPLOYMENT_PORT) envsubst | kubectl apply -f -
